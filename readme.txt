@@ -1,10 +1,10 @@
 === New User Approve ===
 Contributors: wpexpertsio
 Donate link: https://newuserapprove.com
-Tags: users, registration, sign up, user management, login
-Requires at least: 3.5.1
-Tested up to: 5.4
-Stable tag: 1.8
+Tags: User Management, User Registration, Registration, users, user approval
+Requires at least: 4.0
+Tested up to: 6.3.1
+Stable tag: 2.5.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,42 +13,144 @@ are able to login to the site.
 
 == Description ==
 
-On a normal WordPress site, once a new user registers, the user is created in the database. Then an email is sent to the new user with their login credentials. Very simple. As it should be.
+**New User Approve plugin automates the user registration process on your WordPress website.**
 
-The New User Approve plugin modifies the registration process. When a user registers for the site, the user gets created and then an email gets sent to the administrators of the site. An administrator then is expected to either approve or deny the registration request. An email is then sent to the user indicating whether they were approved or denied. If the user has been approved, the email will include the login credentials. Until a user is approved, the user will not be able to login to the site.
+Typically, the user registration process on a WordPress website is pretty straightforward. When a new user registers, their unique identity is created in the website's database. An email is then sent to the new user that contains their login credentials. **Simple as it can be, but it goes to say that there is plenty of room for customization**.
 
-Only approved users will be allowed to login to site. Users waiting for approval as well as denied users will not be able to login to site.
+**Introducing New User Approve** -  a new way to register users on your WordPress website. 
 
-A user's status can be updated even after the initial approval/denial.
+Here is how the process works with **New User Approve:**
 
-Each user that exists before New User Approve has been activated will be treated as an approved user.
+1. A user registers on the site, and their ID is created.
+2. An email is sent to the administrators of the site. 
+3. An administrator is then given a choice to either approve or deny the registration request.
+4. An email is then sent to the user indicating whether they were approved or denied. 
+5. If the user is approved, an email will be sent to them that includes their login credentials. 
+6. Until the user is approved, they will not be able to login to the site.
 
-**Default WordPress registration process:** 
+Only approved users will be allowed to log in to the site. Thus, users waiting for approval or the ones rejected will not be able to login to the site - Simple, straightforward, and effective.
 
-1. User registers.
-2. User is shown message to check email.
-3. Login credentials are sent to new user in an email.
-4. User logs in to site using login credentials.
-5. Admin is notified of new user sign up via email.
+The user status can be updated even after the initial approval/denial request. The admin can search approve, deny and pending users. Also, users that have been created before the activation of **New User Approve** will be treated as approved users.
 
-**WordPress registration process with New User Approve plugin activated:**
+**Latest Update - New User Approve v2.3** 
 
-1. User registers for access to site.
-2. User is shown message to wait for approval.
-3. Admin is notified of new user sign up via email.
-4. Admin goes to wp-admin to approve or deny new user.
-5. Email is sent to user. If approved, email will include login credentials.
-6. User logs in to site using login credentials.
+**Automation Made Easier With Zapier**
+Zapier allows you to automate mundane tasks and processes without the need for a developer. Zapier uses a simple trigger and action for creating commands, which in the case of New User Approve are:
 
-**[Follow New User Approve on Github](https://github.com/picklewagon/new-user-approve)**
+* User Approved – Triggers when a user is approved.
+* User Denied – Triggers when a user is denied.
+
+With Zapier, you can use the trigger events for applications like Gmail, Google Sheets, Slack and more.
+
+**Send Invitation Codes**
+Make the registration process easier by sending the invitation code to those who you want to skip the process altogether. People who user the invitation codes are auto-approved by the system.
+
+The invitation codes will be genrated manually and work smoothly with WooCommerce's registration mechanism. They can also be edited and deactivated at any time.
+
+**New User Approve v2.0 - Improved User Interface & Code Optimization**
+The overall interface has been revised and improved for a trendy, fresh, and minimal look. The latest design includes a whole new look and experience for the layout so your users can have an experience unlike any other. 
+
+The clean and easy user interface always helps the existing and the new customers gain confidence in your website.
+
+[youtube https://www.youtube.com/watch?v=RowV3wmD_jg]
+
+**Compatibility**
+New User Approve is compatible with [WooCommerce](https://woocommerce.com/), [MemberPress](https://memberpress.com/), [WP-Foro](https://wpforo.com/), [Learndash](https://www.learndash.com/), and [Ultimate Member](https://ultimatemember.com/), [BuddyPress](https://buddypress.org/), [Zapier](https://zapier.com/apps/new-user-approve/integrations/).
+
+**[Follow New User Approve on Github](https://github.com/wpexpertsio/new-user-approve)**
 
 Further support at [newuserapprove.com](http://newuserapprove.com/).
 
-**Customize**
+**Custom Actions & Filters**
+**New User Approve** can be customized using **custom actions and filters**. You can find out more about these by browsing the source code.
 
-New User Approve allows for customizations by using custom actions and filters. You can find out more about these by browsing the source code.
+A commercial plugin that adds a config panel for customization is also available at [https://newuserapprove.com/#PricePlan](https://newuserapprove.com/#PricePlan).
 
-A commercial plugin that adds a config panel for customization is also available at [https://newuserapprove.com/options-addon/](https://newuserapprove.com/options-addon/).
+**The code for this plugin is also available at Github** [https://github.com/wpexpertsio/new-user-approve](https://github.com/wpexpertsio/new-user-approve). Pull requests are welcomed.
+
+**Filters**
+- *new_user_approve_user_status* - modify the list of users shown in the tables
+- *new_user_approve_request_approval_message* - modify the request approval message
+- *new_user_approve_request_approval_subject* - modify the request approval subject
+- *new_user_approve_approve_user_message* - modify the user approval message
+- *new_user_approve_approve_user_subject* - modify the user approval subject
+- *new_user_approve_deny_user_message* - modify the user denial message
+- *new_user_approve_deny_user_subject* - modify the user denial subject
+- *new_user_approve_pending_message* - modify message user sees after registration
+- *new_user_approve_registration_message* - modify message after a successful registration
+- *new_user_approve_register_instructions* - modify message that appears on registration screen
+- *new_user_approve_pending_error* - error message shown to pending users when attempting to log in
+- *new_user_approve_denied_error* - error message shown to denied users when attempting to log in
+- *nua_input_sanitize_hook',$input,$current* - enables you to sanitize and save custom fields
+- *nua_pass_create_new_user', $user_pass* - modify the password being assiged to newly created user
+
+**Actions**
+- *new_user_approve_user_approved* - after the user has been approved
+- *new_user_approve_user_denied* - after the user has been denied
+- *new_user_approve_approve_user* - when the user has been approved
+- *new_user_approve_deny_user* - when the user has been denied
+- *nua_add_settings', $this->option_page* - enables you to add custom setting fields
+- *nua_enqueue_scripts_for_settings* - enables you to add custom scripts on settings page
+- *nua_settings_main_tab',$action* - enables you to add custom settings tab
+
+== DOCUMENTATION ==
+[Click here](https://newuserapprove.com/documentation/#installation-guide) to view the detailed technical documentation of New User Approve Free Version. The documentation includes a step-by-step configuration guide and troubleshooting.
+
+**New User Approve Pro Features**
+[Download Premium from here](https://newuserapprove.com/#PricePlan)
+
+* Ability to remove plugin stats from the admin dashboard.
+* Remove the admin panel from the WordPress dashboard specifically added to update user status.
+* Auto approve or reject users by adding them to Blacklist or Whitelist.
+* Customize the welcome message displayed above the WordPress login form.
+* Customize the "Pending error message" displayed to the user on the log-in page when their account is still pending approval.
+* Customize the "Denied error message" displayed to the user when their account is denied approval.
+* Customize the welcome message displayed above the WordPress registration form.
+* Customize the "registration complete" message displayed after the user submits the registration form for approval.
+* Ability To send notification emails to all admins.
+* Notify admins when a user's status is updated.
+* [Integration with Zapier](https://zapier.com/apps/new-user-approve/integrations/) - allow you to send data between Zapier and New User Approve.
+* Zapier trigger events for user approved and denied. 
+* Create invitation codes for user registration form on BuddyPress.
+* Disable notification emails to current site admin.
+* Customize the email sent to admin/s when a user registers on the site.
+* Customize the email sent to the user when their profile is approved.
+* Customize the email sent to the user when their profile is denied.
+* Suppress denial notification(s).
+* Option to send all notification/s in the HTML format.
+* Different template tags can be used in Notification Emails and other messages.
+* Invitation codes to invite and approve users automatically.
+* Invitation codes can be generated manually and automatically.
+* Import invitation codes via CSV file.
+
+== TRANSLATIONS ==
+If you need help in translating the content of this plugin into your language, then take a look at the localization/new-user-approve.pot file, which contains all definitions and can be used with a gettext editor like Poedit (Windows). More information can be found on the [Codex](https://codex.wordpress.org/Translating_WordPress).
+
+* Belarussian translation by [Fat Cow](http://www.fatcow.com/)
+* Brazilian Portuguese translation by [leogermani](http://profiles.wordpress.org/leogermani/)
+* Bulgarian translation by [spaszs](https://profiles.wordpress.org/spaszs/)
+* Catalan translation by [xoanet](http://profiles.wordpress.org/xoanet/)
+* Croatian translation by Nik
+* Czech translation by [GazikT](http://profiles.wordpress.org/gazikt/)
+* Danish translation by [GeorgWP](http://wordpress.org/support/profile/georgwp)
+* Dutch translation by [Ronald Moolenaar](http://profiles.wordpress.org/moolie/)
+* Estonian translation by (Rait Huusmann)(http://profiles.wordpress.org/raitulja/)
+* Finnish translation by Tonttu-ukko
+* French translation by [Philippe Scoffoni](http://philippe.scoffoni.net/)
+* German translation by Christoph Ploedt
+* Greek translation by [Leftys](http://alt3rnet.info/)
+* Hebrew translation by [Udi Burg](http://blog.udiburg.com)
+* Hungarian translation by Gabor Varga
+* Italian translation by [Pierfrancesco Marsiaj](http://profiles.wordpress.org/pierinux/)
+* Lithuanian translation by [Ksaveras](http://profiles.wordpress.org/xawiers)
+* Persian translation by [alimir](http://profiles.wordpress.org/alimir)
+* Polish translation by [pik256](http://wordpress.org/support/profile/1271256)
+* Romanian translation by [Web Hosting Geeks](http://webhostinggeeks.com/)
+* Russian translation by [Alexey](http://wordpress.org/support/profile/asel)
+* Serbo-Croation translation by [Web Hosting Hub](http://www.webhostinghub.com/)
+* Slovakian translation by Boris Gereg
+* Spanish translation by [Eduardo Aranda](http://sinetiks.com/)
+* Swedish translation by [Per Bj&auml;levik](http://pastis.tauzero.se)
 
 == Installation ==
 
@@ -81,13 +183,84 @@ We are aware of a few issues with multisite
 
 == Screenshots ==
 
-1. The backend to manage approving and denying users. This is an alternative to approving users.
-2. Integration with WordPress Users admin page.
-3. Filter users by status.
-4. Approve or deny users using the bulk edit feature in WordPress.
-5. Custom messages on the login screen.
+1. User Registration Approval - Pending Users.
+2. User Registration Approval - Approved Users.
+3. User Registration Approval - Denied Users.
+4. User Registration Approval - Zapier Settings.
+5. Invitation Code Settings - Add Codes.
+6. Invitation Code Settings - Settings.
+7. Pro Features.
 
 == Changelog ==
+
+= 2.5.1 =
+* New - Added compatibility with WordPress version 6.3.1
+
+
+= 2.5 =
+* Updated localization - pot file updated, French and Italian po mo updated.
+* Fixed - Approve button color issue.
+* Fixed - Duplicate text message on user registration by invitation code.
+* Fixed - Rest API notice.
+* Improvement - When using invitation code user will not be created if invition code is not given or incorrect invitation code is used.
+* Improvement - When user successfully registers via invitation code the welcome email not sent, instead Approve email is sent and success message appears. 
+
+= 2.4.1 =
+* Tweak – Security Fixes
+
+= 2.4 =
+* Tweak – Code improvement
+
+= 2.3 =
+* Added - Zapier Integration
+* Added - Filter Hook to Filter password before user creation.
+* Added - Search approve, deny and pending users.
+* Improvement - Code Optimization.
+
+= 2.1 = 
+* Updated Freemius SDK Version 2.4.3
+
+= 2.0 = 
+* Updated- Plugin menu.
+* Added- the invitation code functionality.
+* Improved backend UI.
+
+= 1.9.1 = 
+* Added filter to enable/disable auto login on WooCommerce checkout, by default it will be enabled.
+
+= 1.8.9 = 
+* Issue in user search functionality.
+
+= 1.8.8 =
+* Freemius Library Updated.
+* 'View all user' filter not working in users page.
+* Disable auto login on WooCommerce checkout.
+
+= 1.8.7 =
+* Upgrade to pro menu fixed.
+
+= 1.8.6 =
+* Code optimization.
+
+= 1.8.5 =
+* Added: Support for reCaptcha on default Login and Registration page.
+
+= 1.8.4 =
+* Added: User registeration welcome email
+* Added: Action Hook - new_user_approve_after_registration
+* Added: Filter Hook for modify welcome email subject - new_user_approve_welcome_user_subject
+* Added: Filter Hook for modify welcome email message - new_user_approve_welcome_user_message
+
+= 1.8.3 =
+* Updated Freemius SDK Version 2.4.1
+
+= 1.8.2 =
+* Code Optimization
+
+= 1.8.1 =
+* Tested upto WordPress version 5.5
+* Tested for compatibility with [Memberpress](https://memberpress.com/)
+* Added: Compatibility for [WooCoommerce](https://woocommerce.com/)
 
 = 1.8 =
 * Tested with WordPress 5.4
@@ -321,75 +494,3 @@ Download version 1.3.2 immediately! A bug was found in version 1.3 that allows a
 == Other Notes ==
 
 The code for this plugin is also available at Github - https://github.com/picklewagon/new-user-approve. Pull requests welcomed.
-
-= Filters =
-* *new_user_approve_user_status* - modify the list of users shown in the tables
-* *new_user_approve_request_approval_message* - modify the request approval message
-* *new_user_approve_request_approval_subject* - modify the request approval subject
-* *new_user_approve_approve_user_message* - modify the user approval message
-* *new_user_approve_approve_user_subject* - modify the user approval subject
-* *new_user_approve_deny_user_message* - modify the user denial message
-* *new_user_approve_deny_user_subject* - modify the user denial subject
-* *new_user_approve_pending_message* - modify message user sees after registration
-* *new_user_approve_registration_message* - modify message after a successful registration
-* *new_user_approve_register_instructions* - modify message that appears on registration screen
-* *new_user_approve_pending_error* - error message shown to pending users when attempting to log in
-* *new_user_approve_denied_error* - error message shown to denied users when attempting to log in
-
-= Actions =
-* *new_user_approve_user_approved* - after the user has been approved
-* *new_user_approve_user_denied* - after the user has been denied
-* *new_user_approve_approve_user* - when the user has been approved
-* *new_user_approve_deny_user* - when the user has been denied
-
-= Premium Features =
-
-* Provide Ability To remove plugin stats from admin dashboard
-* Remove the admin panel specifically added to update a user's status, from wordpress dashboard.
-* Customize the welcome message displayed above wordpress login form.
-* Customize the 'Pending error message' displayed when user tries to login but his account is still pending approval.
-* Customize the 'Denied error message' displayed when user tries to login but his account is denied approval.
-* Customize the welcome message displayed above wordpress Registration form.
-* Customize the Registration complete message displayed after user submits Registration form for approval.
-* Provide Ability To Send notification emails to all admins
-* Notify admins when a user's status is updated
-* Disable notification emails to current site admin
-* Customize the email sent to admin when a user registers for the site
-* Customize the email sent to user when his profile is approved.
-* Customize the email sent to user when his profile is denied.
-* Suppress denial notification
-* Provides option to send all notification as html.
-* It Provides you Different template tags which can be used in Notification Emails and Other messages on site.
-
-[Download Premium from here](https://newuserapprove.com/options-addon)
-
-= Translations =
-The plugin has been prepared to be translated. If you want to help to translate the plugin to your language, please have a look at the localization/new-user-approve.pot file which contains all definitions and may be used with a gettext editor like Poedit (Windows). More information can be found on the [Codex](http://codex.wordpress.org/Translating_WordPress).
-
-When sending me your translation files, please send me your wordpress.org username as well.
-
-* Belarussian translation by [Fat Cow](http://www.fatcow.com/)
-* Brazilian Portuguese translation by [leogermani](http://profiles.wordpress.org/leogermani/)
-* Bulgarian translation by [spaszs](https://profiles.wordpress.org/spaszs/)
-* Catalan translation by [xoanet](http://profiles.wordpress.org/xoanet/)
-* Croatian translation by Nik
-* Czech translation by [GazikT](http://profiles.wordpress.org/gazikt/)
-* Danish translation by [GeorgWP](http://wordpress.org/support/profile/georgwp)
-* Dutch translation by [Ronald Moolenaar](http://profiles.wordpress.org/moolie/)
-* Estonian translation by (Rait Huusmann)(http://profiles.wordpress.org/raitulja/)
-* Finnish translation by Tonttu-ukko
-* French translation by [Philippe Scoffoni](http://philippe.scoffoni.net/)
-* German translation by Christoph Ploedt
-* Greek translation by [Leftys](http://alt3rnet.info/)
-* Hebrew translation by [Udi Burg](http://blog.udiburg.com)
-* Hungarian translation by Gabor Varga
-* Italian translation by [Pierfrancesco Marsiaj](http://profiles.wordpress.org/pierinux/)
-* Lithuanian translation by [Ksaveras](http://profiles.wordpress.org/xawiers)
-* Persian translation by [alimir](http://profiles.wordpress.org/alimir)
-* Polish translation by [pik256](http://wordpress.org/support/profile/1271256)
-* Romanian translation by [Web Hosting Geeks](http://webhostinggeeks.com/)
-* Russian translation by [Alexey](http://wordpress.org/support/profile/asel)
-* Serbo-Croation translation by [Web Hosting Hub](http://www.webhostinghub.com/)
-* Slovakian translation by Boris Gereg
-* Spanish translation by [Eduardo Aranda](http://sinetiks.com/)
-* Swedish translation by [Per Bj&auml;levik](http://pastis.tauzero.se)

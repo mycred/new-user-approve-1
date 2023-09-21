@@ -17,6 +17,8 @@ function nua_default_approve_user_message() {
 	return $message;
 }
 
+
+
 /**
  * The default email message that will be sent to users as they are denied.
  *
@@ -44,6 +46,22 @@ function nua_default_registration_complete_message() {
 
 	return $message;
 }
+
+function nua_auto_approve_message() {
+
+
+	$message = sprintf( __( 'You have been approved to access {sitename}. You will receive an email with instructions on what you will need to do next. Thanks for your patience.
+
+	', 'new-user-approve' ) );
+	$message .= ' ';
+	$message = apply_filters( 'new_user_approve_auto_approve_message', $message );
+
+	return $message;
+
+}
+
+
+
 
 /**
  * The default welcome message that is shown to all users on the login page.
@@ -86,4 +104,16 @@ function nua_default_registration_message() {
 	$message = apply_filters( 'new_user_approve_registration_message_default', $message );
 
 	return $message;
+}
+
+function nua_default_registeration_welcome_email() {
+    $message  = __('Hello,', "new-user-approve") . "\r\n\r\n";
+    
+    $message .= __("Thank you for registering on our site. We have successfully received your request and is currently pending for approval.", "new-user-approve") . "\r\n";
+    
+    $message .= __("The administrator will review the information that has been submitted after which they will either approve or deny your request. You will receive an email with the instructions on what you will need to do next.", "new-user-approve") . "\r\n\r\n";
+    
+    $message .= __("Thank You", "new-user-approve");
+    
+    return $message;
 }

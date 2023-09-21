@@ -4,18 +4,24 @@
  Plugin Name: New User Approve
  Plugin URI: http://newuserapprove.com/
  Description: Allow administrators to approve users once they register. Only approved users will be allowed to access the site. For support, please go to the <a href="http://wordpress.org/support/plugin/new-user-approve">support forums</a> on wordpress.org.
- Author: NewUserApprove
- Version: 1.8
+ Author: WPExpertsio
+ Version: 2.5.1
+ Tested up to: 6.3.1
  Author URI: https://newuserapprove.com/
  Text Domain: new-user-approve
 */
+
+
+if ( !defined( 'NUA_VERSION' ) ) {
+    define( 'NUA_VERSION', '2.5.1' );
+}
 
 if ( !function_exists( 'nua_fs' ) ) {
     // Create a helper function for easy SDK access.
     function nua_fs()
     {
         global  $nua_fs ;
-        
+
         if ( !isset( $nua_fs ) ) {
             // Include Freemius SDK.
             require_once dirname( __FILE__ ) . '/freemius/start.php';
@@ -27,22 +33,23 @@ if ( !function_exists( 'nua_fs' ) ) {
                 'is_premium'     => false,
                 'premium_suffix' => 'Premium',
                 'has_addons'     => false,
-                'has_paid_plans' => true,
+                'has_paid_plans' => false,
+                'has_premium_version' => true,
+                'has_affiliation'     => 'selected',
                 'menu'           => array(
-                'slug'    => 'new-user-approve-admin',
-                'contact' => false,
-                'support' => false,
-                'parent'  => array(
-                'slug' => 'users.php',
-            ),
-            ),
+                    'slug'    => 'new-user-approve-admin',
+                    'contact' => false,
+                    'support' => false,
+                    'account' => false,
+                    'pricing' => false,
+                ),
                 'is_live'        => true,
             ) );
         }
-        
+
         return $nua_fs;
     }
-    
+
     // Init Freemius.
     nua_fs();
     // Signal that SDK was initiated.
@@ -64,16 +71,16 @@ class pw_new_user_approve
      */
     public static function instance()
     {
-        
+
         if ( !isset( self::$instance ) ) {
             self::$instance = new pw_new_user_approve();
             self::$instance->includes();
             self::$instance->email_tags = new NUA_Email_Template_Tags();
         }
-        
+
         return self::$instance;
     }
-    
+
     private function __construct()
     {
         // Load up the localization file if we're using WordPress in a different language
@@ -88,6 +95,7 @@ class pw_new_user_approve
         add_action( 'new_user_approve_approve_user', array( $this, 'delete_new_user_approve_transient' ), 11 );
         add_action( 'new_user_approve_deny_user', array( $this, 'delete_new_user_approve_transient' ), 11 );
         add_action( 'deleted_user', array( $this, 'delete_new_user_approve_transient' ) );
+         add_action('admin_enqueue_scripts', array( $this, 'nua_admin_scripts' ));
         //add_action( 'register_post', array( $this, 'request_admin_approval_email' ), 10, 3 );
         add_action(
             'register_post',
@@ -95,7 +103,7 @@ class pw_new_user_approve
             10,
             3
         );
-        add_action( 'lostpassword_post', array( $this, 'lost_password' ) );
+        add_action( 'lostpassword_post', array( $this, 'lost_password'),99,2);
         add_action( 'user_register', array( $this, 'add_user_status' ) );
         add_action( 'user_register', array( $this, 'request_admin_approval_email_2' ) );
         add_action( 'new_user_approve_approve_user', array( $this, 'approve_user' ) );
@@ -110,7 +118,7 @@ class pw_new_user_approve
         );
         // Filters
         add_filter( 'wp_authenticate_user', array( $this, 'authenticate_user' ) );
-        add_filter( 'registration_errors', array( $this, 'show_user_pending_message' ) );
+        add_filter( 'registration_errors', array( $this, 'show_user_pending_message' ), 99 );
         add_filter( 'login_message', array( $this, 'welcome_user' ) );
         add_filter(
             'new_user_approve_validate_status_update',
@@ -119,31 +127,37 @@ class pw_new_user_approve
             3
         );
         add_filter( 'shake_error_codes', array( $this, 'failure_shake' ) );
+        add_filter( 'woocommerce_registration_auth_new_customer', array( $this, 'disable_woo_auto_login' ) );
+        add_action('woocommerce_checkout_order_processed', array( $this, 'disable_woo_auto_login_on_checkout' ), 10, 0);
     }
-    
+
     public function get_plugin_url()
     {
         return plugin_dir_url( __FILE__ );
     }
-    
+
     public function get_plugin_dir()
     {
         return plugin_dir_path( __FILE__ );
     }
-    
+
     /**
      * Include required files
      *
      * @access private
      * @since 1.4
+     * @since 2.1 `required` zapier.php
      * @return void
      */
     private function includes()
     {
         require_once $this->get_plugin_dir() . 'includes/email-tags.php';
         require_once $this->get_plugin_dir() . 'includes/messages.php';
+        require_once $this->get_plugin_dir() . 'includes/invitation-code.php';
+        require_once $this->get_plugin_dir() . 'includes/zapier/zapier.php';
+
     }
-    
+
     /**
      * Require a minimum version of WordPress on activation
      *
@@ -155,12 +169,12 @@ class pw_new_user_approve
         $min_wp_version = '3.5.1';
         $exit_msg = sprintf( __( 'New User Approve requires WordPress %s or newer.', 'new-user-approve' ), $min_wp_version );
         if ( version_compare( $wp_version, $min_wp_version, '<' ) ) {
-            exit( $exit_msg );
+             exit( esc_html( $exit_msg )) ;
         }
         // since the right version of WordPress is being used, run a hook
         do_action( 'new_user_approve_activate' );
     }
-    
+
     /**
      * @uses register_deactivation_hook
      */
@@ -168,7 +182,7 @@ class pw_new_user_approve
     {
         do_action( 'new_user_approve_deactivate' );
     }
-    
+
     /**
      * Verify settings upon activation
      *
@@ -181,7 +195,7 @@ class pw_new_user_approve
             add_action( 'admin_notices', array( $this, 'admin_notices' ) );
         }
     }
-    
+
     /**
      * Show admin notice if the membership setting is turned off.
      */
@@ -205,17 +219,17 @@ class pw_new_user_approve
         // one last chance to show the update
         $show_notice = apply_filters( 'new_user_approve_show_membership_notice', $show_notice, $user_id );
         // Check that the user hasn't already clicked to ignore the message
-        
+
         if ( !$show_notice ) {
             echo  '<div class="error"><p>' ;
-            printf( __( 'The Membership setting must be turned on in order for the New User Approve to work correctly. <a href="%1$s">Update in settings</a>. | <a href="%2$s">Hide Notice</a>', 'new-user-approve' ), admin_url( 'options-general.php' ), add_query_arg( array(
+            printf( wp_kses_post( 'The Membership setting must be turned on in order for the New User Approve to work correctly. <a href="%1$s">Update in settings</a>. | <a href="%2$s">Hide Notice</a>') , esc_url( admin_url( 'options-general.php' ) ), esc_url(add_query_arg( array(
                 'new-user-approve-settings-notice' => 1,
-            ) ) );
+            )) ) );
             echo  "</p></div>" ;
         }
-    
+
     }
-    
+
     /**
      * Makes it possible to disable the user admin integration. Must happen after
      * WordPress is loaded.
@@ -233,7 +247,7 @@ class pw_new_user_approve
             require_once dirname( __FILE__ ) . '/includes/admin-approve.php';
         }
     }
-    
+
     /**
      * Get the status of a user.
      *
@@ -248,7 +262,7 @@ class pw_new_user_approve
         }
         return $user_status;
     }
-    
+
     /**
      * Update the status of a user. The new status must be either 'approve' or 'deny'.
      *
@@ -280,7 +294,7 @@ class pw_new_user_approve
         do_action( 'new_user_approve_user_status_update', $user_id, $status );
         return true;
     }
-    
+
     /**
      * Get the valid statuses. Anything outside of the returned array is an invalid status.
      *
@@ -290,7 +304,7 @@ class pw_new_user_approve
     {
         return array( 'pending', 'approved', 'denied' );
     }
-    
+
     /**
      * Only validate the update if the status has been updated to prevent unnecessary update
      * and especially emails.
@@ -302,19 +316,19 @@ class pw_new_user_approve
     public function validate_status_update( $do_update, $user_id, $status )
     {
         $current_status = pw_new_user_approve()->get_user_status( $user_id );
-        
+
         if ( $status == 'approve' ) {
             $new_status = 'approved';
         } else {
             $new_status = 'denied';
         }
-        
+
         if ( $current_status == $new_status ) {
             $do_update = false;
         }
         return $do_update;
     }
-    
+
     /**
      * The default message that is shown to a user depending on their status
      * when trying to sign in.
@@ -324,23 +338,23 @@ class pw_new_user_approve
     public function default_authentication_message( $status )
     {
         $message = '';
-        
+
         if ( $status == 'pending' ) {
             $message = __( '<strong>ERROR</strong>: Your account is still pending approval.', 'new-user-approve' );
             $message = apply_filters( 'new_user_approve_pending_error', $message );
         } else {
-            
+
             if ( $status == 'denied' ) {
                 $message = __( '<strong>ERROR</strong>: Your account has been denied access to this site.', 'new-user-approve' );
                 $message = apply_filters( 'new_user_approve_denied_error', $message );
             }
-        
+
         }
-        
+
         $message = apply_filters( 'new_user_approve_default_authentication_message', $message, $status );
         return $message;
     }
-    
+
     /**
      * Determine if the user is good to sign in based on their status.
      *
@@ -370,13 +384,13 @@ class pw_new_user_approve
         }
         return $message;
     }
-    
+
     public function _get_user_statuses( $count = true )
     {
         $statuses = array();
         foreach ( $this->get_valid_statuses() as $status ) {
             // Query the users table
-            
+
             if ( $status != 'approved' ) {
                 // Query the users table
                 $query = array(
@@ -405,55 +419,55 @@ class pw_new_user_approve
                     'number'      => 1,
                 );
             }
-            
-            
+
+
             if ( $count === false ) {
                 unset( $query['count_total'] );
                 unset( $query['number'] );
             }
-            
+
             $wp_user_search = new WP_User_Query( $query );
-            
+
             if ( $count === true ) {
                 $statuses[$status] = $wp_user_search->get_total();
             } else {
                 $statuses[$status] = $wp_user_search->get_results();
             }
-        
+
         }
         return $statuses;
     }
-    
+
     /**
      * Get a list of statuses with a count of users with that status and save them using a transient
      */
     public function get_count_of_user_statuses()
     {
         $user_statuses = get_transient( 'new_user_approve_user_statuses_count' );
-        
+
         if ( false === $user_statuses ) {
             $user_statuses = $this->_get_user_statuses();
             set_transient( 'new_user_approve_user_statuses_count', $user_statuses );
         }
-        
+
         return $user_statuses;
     }
-    
+
     public function get_user_statuses()
     {
         $user_statuses = get_transient( 'new_user_approve_user_statuses' );
-        
+
         if ( false === $user_statuses ) {
             $user_statuses = $this->_get_user_statuses( false );
             set_transient( 'new_user_approve_user_statuses', $user_statuses );
         }
-        
+
         foreach ( $this->get_valid_statuses() as $status ) {
             $user_statuses[$status] = apply_filters( 'new_user_approve_user_status', $user_statuses[$status], $status );
         }
         return $user_statuses;
     }
-    
+
     /**
      * Delete the transient storing all of the user statuses.
      *
@@ -466,13 +480,36 @@ class pw_new_user_approve
     {
         delete_transient( 'new_user_approve_user_statuses' );
     }
-    
+
     /**
      * Display the stats on the WP dashboard. Will show 1 line with a count
      * of users and their status.
      *
      * @uses rightnow_end
      */
+
+     /**
+     * Add scripts and styles for New User Approve admin pages
+     * @since 2.0 `nua-admin` enqueued for zapier
+     */
+    public function nua_admin_scripts() {
+        $pages = array('new-user-approve-auto-approve', 'nua-invitation-code', 'new-user-approve', 'new-user-approve-admin');
+
+        if (isset($_GET['page']) && in_array($_GET['page'], $pages)) {
+            wp_enqueue_style( 'nua-admin-style', plugins_url( '/assets/css/nua-admin-style.css', __FILE__ ), array(), NUA_VERSION);
+
+            $current_user = wp_get_current_user();
+
+			wp_enqueue_script( 'nua-admin', plugins_url( '/assets/js/admin.js', __FILE__ ), array( 'jquery' ), NUA_VERSION );
+            wp_localize_script(
+				'nua-admin',
+				'nuaAdmin',
+				array(
+					'info'	=>	$current_user->user_nicename
+				)
+			);
+        }
+    }
     public function dashboard_stats()
     {
         $user_status = $this->get_count_of_user_statuses();
@@ -480,22 +517,22 @@ class pw_new_user_approve
 		<div>
 			<p>
                 <span style="font-weight:bold;">
-                    <a href="<?php 
-        echo  apply_filters( 'new_user_approve_dashboard_link', 'users.php' ) ;
-        ?>"><?php 
-        _e( 'Users', 'new-user-approve' );
+                    <a href="<?php
+        echo  wp_kses_post (apply_filters( 'new_user_approve_dashboard_link', 'users.php' )) ;
+        ?>"><?php
+        esc_html_e( 'Users', 'new-user-approve' );
         ?></a>
                 </span>:
-				<?php 
+				<?php
         foreach ( $user_status as $status => $count ) {
-            print __( ucwords( $status ), 'new-user-approve' ) . "(" . $count . ")&nbsp;&nbsp;&nbsp;";
+            print esc_html_e( ucwords( $status ), 'new-user-approve' ) . "(" . esc_attr($count) . ")&nbsp;&nbsp;&nbsp;";
         }
         ?>
 			</p>
 		</div>
-	<?php 
+	<?php
     }
-    
+
     /**
      * Send email to admin requesting approval.
      *
@@ -532,7 +569,7 @@ class pw_new_user_approve
             $this->email_message_headers()
         );
     }
-    
+
     /**
      * Send an email to the admin to request approval. If there are already errors,
      * just go back and let core do it's thing.
@@ -545,11 +582,11 @@ class pw_new_user_approve
     public function request_admin_approval_email( $user_login, $user_email, $errors )
     {
         if ( $errors->get_error_code() ) {
-            return;
+            return $errors;
         }
         $this->admin_approval_email( $user_login, $user_email );
     }
-    
+
     /**
      * Send an email to the admin to request approval.
      *
@@ -563,7 +600,7 @@ class pw_new_user_approve
         $user_email = stripslashes( $user->data->user_email );
         $this->admin_approval_email( $user_login, $user_email );
     }
-    
+
     /**
      * Create a new user after the registration has been validated. Normally,
      * when a user registers, an email is sent to the user containing their
@@ -582,12 +619,29 @@ class pw_new_user_approve
         }
         // create the user
         $user_pass = wp_generate_password( 12, false );
+        $user_pass = apply_filters('nua_pass_create_new_user', $user_pass);
         $user_id = wp_create_user( $user_login, $user_pass, $user_email );
         if ( !$user_id ) {
             $errors->add( 'registerfail', sprintf( __( '<strong>ERROR</strong>: Couldn&#8217;t register you... please contact the <a href="mailto:%s">webmaster</a> !' ), get_option( 'admin_email' ) ) );
+        } else {
+            // User Registeration welcome email
+            $disable = apply_filters('nua_disable_welcome_email',false, $user_id);
+            if(false===$disable) {
+                $message = nua_default_registeration_welcome_email();
+                $message = apply_filters( 'new_user_approve_welcome_user_message', $message, $user_email );
+                $subject = sprintf( __( 'Your registration is pending for approval - [%s]', 'new-user-approve' ), get_option( 'blogname' ) );
+                $subject = apply_filters( 'new_user_approve_welcome_user_subject', $subject );
+
+                wp_mail(
+                $user_email,
+                $subject,
+                $message,
+                $this->email_message_headers()
+              );
+            }
         }
     }
-    
+
     /**
      * Determine whether a password needs to be reset.
      *
@@ -619,7 +673,7 @@ class pw_new_user_approve
         $bypass_password_reset = apply_filters( 'new_user_approve_bypass_password_reset', !$do_password_reset );
         return apply_filters( 'new_user_approve_do_password_reset', !$bypass_password_reset );
     }
-    
+
     /**
      * Admin approval of user
      *
@@ -655,7 +709,7 @@ class pw_new_user_approve
         update_user_meta( $user->ID, 'pw_user_status', 'approved' );
         do_action( 'new_user_approve_user_approved', $user );
     }
-    
+
     /**
      * Send email to notify user of denial.
      *
@@ -682,7 +736,7 @@ class pw_new_user_approve
             $this->email_message_headers()
         );
     }
-    
+
     /**
      * Update user status when denying user.
      *
@@ -695,19 +749,19 @@ class pw_new_user_approve
         update_user_meta( $user->ID, 'pw_user_status', 'denied' );
         do_action( 'new_user_approve_user_denied', $user );
     }
-    
+
     public function email_message_headers()
     {
         $admin_email = get_option( 'admin_email' );
-        if ( empty($admin_email) ) {
-            $admin_email = 'support@' . $_SERVER['SERVER_NAME'];
+        if ( isset($_SERVER['SERVER_NAME']) && empty($admin_email) ) {
+            $admin_email = 'support@' . sanitize_text_field(wp_unslash($_SERVER['SERVER_NAME']));
         }
         $from_name = get_option( 'blogname' );
         $headers = array( "From: \"{$from_name}\" <{$admin_email}>\n" );
         $headers = apply_filters( 'new_user_approve_email_header', $headers );
         return $headers;
     }
-    
+
     /**
      * Display a message to the user after they have registered
      *
@@ -715,16 +769,18 @@ class pw_new_user_approve
      */
     public function show_user_pending_message( $errors )
     {
-        
-        if ( !empty($_POST['redirect_to']) ) {
+        $nonce = '';
+        if ( wp_verify_nonce($nonce) ) {return;}
+        $disable_redirect = apply_filters( 'nua_disable_redirect_to_field', false );
+        if ( !empty($_POST['redirect_to']) && false === $disable_redirect ) {
             // if a redirect_to is set, honor it
-            wp_safe_redirect( $_POST['redirect_to'] );
+            wp_safe_redirect( wp_unslash($_POST['redirect_to'] ));
             exit;
         }
-        
+
         // if there is an error already, let it do it's thing
-        if ( $errors->get_error_code() ) {
-            return $errors;
+        if ( !empty($errors) && is_wp_error($errors) && $errors->get_error_code() ) {
+            return  $errors;
         }
         $message = nua_default_registration_complete_message();
         $message = nua_do_email_tags( $message, array(
@@ -734,35 +790,45 @@ class pw_new_user_approve
         $errors->add( 'registration_required', $message, 'message' );
         $success_message = __( 'Registration successful.', 'new-user-approve' );
         $success_message = apply_filters( 'new_user_approve_registration_message', $success_message );
-        login_header( __( 'Pending Approval', 'new-user-approve' ), '<p class="message register">' . $success_message . '</p>', $errors );
-        login_footer();
+
+        if ( function_exists( 'login_header' ) ) {
+            login_header( __( 'Pending Approval', 'new-user-approve' ), '<p class="message register">' . $success_message . '</p>', $errors );
+        }
+        if ( function_exists( 'login_footer' ) ) {
+            login_footer();
+        }
+
+        do_action( 'new_user_approve_after_registration', $errors, $success_message );
+
         // an exit is necessary here so the normal process for user registration doesn't happen
         exit;
     }
-    
+
     /**
      * Only give a user their password if they have been approved
      *
      * @uses lostpassword_post
      */
-    public function lost_password( $errors )
-    {
-        $is_email = strpos( $_POST['user_login'], '@' );
-        
+    public function lost_password( $errors,$user_data )
+    {   $user_login=$user_data->user_login;
+        if(empty($user_login)) {return;}
+
+        $is_email = strpos( sanitize_text_field(wp_unslash($user_login)), '@' );
+
         if ( $is_email === false ) {
-            $username = sanitize_user( $_POST['user_login'] );
+            $username = sanitize_user( wp_unslash($_POST['user_login'] ));
             $user_data = get_user_by( 'login', trim( $username ) );
         } else {
-            $email = is_email( $_POST['user_login'] );
+            $email = is_email( wp_unslash($_POST['user_login']) );
             $user_data = get_user_by( 'email', $email );
         }
-        
-        if ( $user_data->pw_user_status && $user_data->pw_user_status != 'approved' ) {
+
+        if ( isset($user_data) && is_object($user_data) && $user_data->pw_user_status && $user_data->pw_user_status != 'approved' ) {
             $errors->add( 'unapproved_user', __( '<strong>ERROR</strong>: User has not been approved.', 'new-user-approve' ) );
         }
         return $errors;
     }
-    
+
     /**
      * Add message to login page saying registration is required.
      *
@@ -772,7 +838,7 @@ class pw_new_user_approve
      */
     public function welcome_user( $message )
     {
-        
+
         if ( !isset( $_GET['action'] ) ) {
             $welcome = nua_default_welcome_message();
             $welcome = nua_do_email_tags( $welcome, array(
@@ -783,8 +849,9 @@ class pw_new_user_approve
                 $message .= '<p class="message register">' . $welcome . '</p>';
             }
         }
-        
-        
+
+        $nonce = '';
+        if ( wp_verify_nonce($nonce) ) {return;}
         if ( isset( $_GET['action'] ) && $_GET['action'] == 'register' && !$_POST ) {
             $instructions = nua_default_registration_message();
             $instructions = nua_do_email_tags( $instructions, array(
@@ -795,10 +862,10 @@ class pw_new_user_approve
                 $message .= '<p class="message register">' . $instructions . '</p>';
             }
         }
-        
+
         return $message;
     }
-    
+
     /**
      * Give the user a status
      *
@@ -815,7 +882,7 @@ class pw_new_user_approve
         $status = apply_filters( 'new_user_approve_default_status', $status, $user_id );
         update_user_meta( $user_id, 'pw_user_status', $status );
     }
-    
+
     /**
      * Add error codes to shake the login form on failure
      *
@@ -829,7 +896,7 @@ class pw_new_user_approve
         $error_codes[] = 'denied_access';
         return $error_codes;
     }
-    
+
     /**
      * After a user successfully logs in, record in user meta. This will only be recorded
      * one time. The password will not be reset after a successful login.
@@ -847,24 +914,57 @@ class pw_new_user_approve
         }
     }
 
+    /**
+     * Disable auto login for WooCommerce
+     *
+     * @return boolean
+     */
+    public function disable_woo_auto_login( $new_customer )
+    {
+        return false;
+    }
+    /**
+     * Disable auto login on WooCommerce checkout
+     *
+     */
+    public function disable_woo_auto_login_on_checkout()
+    {
+        // destroying session when pending user trying to checkout
+        $boolean = false;
+        $boolean = apply_filters( 'new_user_approve_woo_checkout_process_logout', $boolean );
+        if( $boolean ) {
+            if( is_user_logged_in() ) {
+                $user_id = get_current_user_id();
+                $user_status = get_user_meta($user_id, 'pw_user_status', true);
+                if ( $user_status == 'denied' || $user_status == 'pending') {
+                    wp_destroy_current_session();
+                    wp_clear_auth_cookie();
+                    wp_set_current_user( 0 );
+                }
+            }
+        }
+
+    }
+
+
 }
 // End Class
 global  $nua_fs ;
 
 if ( nua_fs()->is__premium_only() && nua_fs()->can_use_premium_code() ) {
     $filename = dirname( __FILE__ ) . '/premium-files/new-user-approve-options.php';
-    
+
     if ( file_exists( $filename ) ) {
         require_once $filename;
     } else {
         $class = 'notice notice-error';
         $message = __( ' To start using New User Approve Options, please <a href="https://users.freemius.com" target="_blank"> login to your freemius account</a> in order to download the premium version <br /> For more details <a target="_blank" href="https://newuserapprove.com/">Click here</a>!', 'new-user-approve' );
-        printf(
+        printf( wp_kses_post(
             '<br><div class="%1$s"><p>%2$s</p> <a href=' . admin_url() . '>%3$s</a></div>',
             esc_attr( $class ),
             $message,
             esc_html( 'Back!' )
-        );
+        ));
         include_once ABSPATH . 'wp-includes/pluggable.php';
         deactivate_plugins( 'new-user-approve/new-user-approve.php' );
         wp_die();
